@@ -1,0 +1,213 @@
+/* RESET Y FONDOS */
+:root {
+    --color-primary: #1a1a1a; /* Texto principal */
+    --color-secondary: #008744; /* Verde de enlaces/detalles */
+    --color-background: #ffffff; /* Fondo blanco */
+    --font-serif: 'Merriweather', serif; /* Para títulos */
+    --font-sans: 'Inter', sans-serif; /* Para metadatos y cuerpo */
+}
+
+body {
+    font-family: var(--font-sans);
+    line-height: 1.65;
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-background);
+    color: var(--color-primary);
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--color-secondary);
+}
+
+/* ESTRUCTURA Y CONTENEDORES */
+.header-container,
+.main-content,
+.footer {
+    width: 90%;
+    max-width: 768px; /* Medium usa un ancho máximo cómodo para lectura */
+    margin: 0 auto;
+}
+
+/* HEADER Y NAVEGACIÓN */
+.header {
+    background: var(--color-background);
+    border-bottom: 1px solid #eee;
+    padding: 1.5rem 0;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.nav-list {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+    padding: 0;
+}
+
+.nav-list a {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* SECCIONES DE CONTENIDO */
+.welcome-section {
+    padding: 3rem 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2rem;
+}
+
+.welcome-section h1 {
+    font-family: var(--font-serif);
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--color-text-light);
+}
+
+.posts-section h2 {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+}
+
+/* LISTA DE POSTS (Estilo 'Ladrillo' simple) */
+#posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.post-summary {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 2.5rem;
+    cursor: pointer;
+}
+
+.post-summary h3 {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.post-summary p {
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+}
+
+.post-summary:hover h3 {
+    color: var(--color-secondary);
+}
+
+/* FOOTER */
+.footer {
+    border-top: 1px solid #eee;
+    padding: 2rem 0;
+    margin-top: 4rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+}
+
+/* ================================== */
+/* 💥 REGLAS DEL OVERLAY (MODAL) 💥   */
+/* Se mantienen para funcionalidad */
+/* ================================== */
+
+#modal-overlay {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95); /* Fondo blanco semitransparente */
+    z-index: 1000; 
+    display: flex; 
+    justify-content: center;
+    overflow-y: auto; 
+    padding: 20px;
+}
+
+#modal-container {
+    background: #fff;
+    padding: 2rem;
+    width: 95%;
+    max-width: 740px; /* Ancho de lectura de Medium */
+    box-shadow: none; /* Quitamos la sombra para un look más limpio */
+    position: relative;
+    max-height: fit-content;
+}
+
+#close-modal-btn {
+    position: fixed; /* Lo fijamos en la ventana, no en el contenido */
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    padding: 8px 12px;
+    border-radius: 50%; /* Circular */
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+#close-modal-btn:hover {
+    background: #f0f0f0;
+}
+
+/* Estilos de Markdown (Contenido) */
+#modal-content {
+    /* El contenido sigue los estilos de lectura de Medium */
+    font-family: 'Lora', serif;
+    font-size: 1.15rem;
+    padding-top: 40px; /* Para que no se esconda bajo el botón */
+}
+
+#modal-content h1 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-top: 0;
+}
+
+#modal-content h2 {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    margin-top: 1.5rem;
+    border-bottom: none;
+}
+
+#modal-content p {
+    margin-bottom: 1.5rem;
+}
+
+#modal-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 2rem auto;
+}
