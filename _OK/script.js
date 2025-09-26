@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.getElementById('close-modal-btn');
 
     // 2. FUNCIÓN PARA LEER METADATA Y RESUMEN
+    // Esta función lee el encabezado YAML (---) de un archivo .md y el primer párrafo
     const parsePostData = (markdownText) => {
         let metadata = {};
         let content = '';
@@ -29,20 +30,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (inMetadata) {
                 const [key, ...value] = line.split(':');
                 if (key && value.length) {
-                    metadata[key.trim()] = value.join(':').trim().replace(/^['"]|['"]$/g, '');
+                    metadata[key.trim()] = value.join(':').trim().replace(/^['"]|['"]$/g, ''); // Limpiar comillas
                 }
             } else if (metadataEndFound) {
+                // Leer el resumen (el primer párrafo después de la metadata)
                 if (readingSummary) {
                     if (line.trim() !== '') {
                         summaryLines.push(line);
                     } else if (summaryLines.length > 0) {
-                        readingSummary = false; 
+                        readingSummary = false; // El primer espacio en blanco termina el resumen
                     }
                 }
                 content += line + '\n';
             }
         }
         
+        // El resumen es la primera parte del contenido
         const summary = summaryLines.join(' ').substring(0, 180).trim() + '...';
 
         return { metadata, content, summary };
@@ -78,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const { metadata, content } = parsePostData(markdownText);
             
+            // Renderizar el contenido completo en el modal
             const htmlContent = marked.parse(content);
             modalContent.innerHTML = `
                 <p class="post-meta-modal">${metadata.autor || 'Voltax'} | ${metadata.fecha || 'Sin fecha'}</p>
@@ -102,10 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const fileList = await manifestResponse.json();
 
+            // 5a. Crear un array de promesas para cargar TODOS los archivos MD a la vez
             const fetchPromises = fileList.map(filename => 
                 fetch(`posts/${filename}`).then(res => res.text())
             );
 
+            // 5b. Esperar a que todos los archivos se descarguen
             const allMarkdownTexts = await Promise.all(fetchPromises);
             postsListContainer.innerHTML = ''; 
 
@@ -125,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a href="#" data-filename="${filename}" class="read-more-link">Leer Post Completo</a>
                 `;
 
+                // Añadimos el evento para cargar el post en el modal
                 postElement.querySelector('.read-more-link').addEventListener('click', (e) => {
                     e.preventDefault();
                     loadFullPost(filename);
@@ -135,33 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error al cargar y procesar los posts:", error);
-            postsListContainer.innerHTML = `<p>Error crítico al cargar los posts: ${error.message}. Verifica el archivo .nojekyll.</p>`;
+            postsListContainer.innerHTML = `<p>Error crítico al cargar los posts: ${error.message}. Verifica que el archivo .nojekyll exista.</p>`;
         }
     };
 
     loadPostsManifest();
-
-    // ===========================================
-    // LÓGICA DEL BOTÓN "IR ARRIBA"
-    // ===========================================
-
-    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-
-    // 1. Mostrar/Ocultar el botón
-    window.addEventListener('scroll', () => {
-        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-            scrollToTopBtn.style.display = "block";
-        } else {
-            scrollToTopBtn.style.display = "none";
-        }
-    });
-
-    // 2. Funcionalidad de scroll suave
-    scrollToTopBtn.addEventListener('click', () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth' 
-        });
-    });
-    // ===========================================
 });
