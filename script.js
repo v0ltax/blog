@@ -1,12 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const postFiles = [
-        'posts/2025-09-22-mi-primer-post.md',
-        'posts/2025-09-21-otro-post-copado.md'
-    ];
+    // 1. Apuntamos al archivo JSON que contiene la lista
+    const MANIFEST_FILE = 'posts/posts.json';
 
     const postsSection = document.querySelector('.posts-section .post-list-container');
     const postsData = [];
 
+    // Esta función no cambia (procesa y renderiza el contenido Markdown)
     const renderPost = (markdownContent, metadata) => {
         const postElement = document.createElement('article');
         postElement.classList.add('post');
@@ -24,15 +23,31 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const loadPosts = async () => {
-        const fetchPromises = postFiles.map(file => {
-            return fetch(file)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error al cargar el archivo: ${response.statusText}`);
-                    }
-                    return response.text();
-                })
+        let fileList = [];
+        
+        // --- PASO 1: Descargar la lista de archivos (el manifiesto) ---
+        try {
+            const manifestResponse = await fetch(MANIFEST_FILE);
+            if (!manifestResponse.ok) {
+                throw new Error("No se encontró el manifiesto de posts.");
+            }
+            fileList = await manifestResponse.json();
+            
+        } catch (error) {
+            console.error("Error al cargar la lista de posts:", error);
+            postsSection.innerHTML = "<p>No se pudo obtener la lista de posts. Asegurate de que `posts/posts.json` exista.</p>";
+            return;
+        }
+
+
+        // --- PASO 2: Descargar cada archivo .md de la lista ---
+        const fetchPromises = fileList.map(filename => {
+            const filePath = `posts/${filename}`; // Creamos la ruta completa
+            
+            return fetch(filePath)
+                .then(response => response.text())
                 .then(text => {
+                    // (La lógica para extraer metadata sigue siendo la misma)
                     const lines = text.split('\n');
                     let metadata = {};
                     let markdownContent = '';
@@ -65,17 +80,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         });
 
+        // --- PASO 3: Esperar, ordenar y renderizar ---
         try {
             const loadedPosts = await Promise.all(fetchPromises);
             postsData.push(...loadedPosts);
+            
+            // Ordenamiento cronológico (Del más nuevo al más viejo)
             postsData.sort((a, b) => b.date - a.date);
+            
             postsData.forEach(post => {
                 const postElement = renderPost(post.markdownContent, post.metadata);
                 postsSection.appendChild(postElement);
             });
+            
         } catch (error) {
-            console.error("No se pudieron cargar los posts:", error);
-            postsSection.innerHTML = "<p>Hubo un problema al cargar los posts. Verificá que los archivos y las rutas sean correctas.</p>";
+            console.error("Hubo un error al procesar un post .md:", error);
+            postsSection.innerHTML += `<p>Error al procesar algunos posts. Revise el formato.</p>`;
         }
     };
 
