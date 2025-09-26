@@ -1,50 +1,122 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // URL del API Proxy para convertir el Feed RSS de Medium de @voltax a JSON.
-    const RSS_PROXY_URL = 'https://api.rss2json.com/v1/api.json?rss_url=https://medium.com/feed/@voltax';
+    // 1. SELECTORES Y RUTAS
+    const POSTS_MANIFEST = 'posts/posts.json';
+    const postsListContainer = document.getElementById('posts-list');
+    
+    // Selectores del Modal (Overlay)
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalContent = document.getElementById('modal-content');
+    const closeModalBtn = document.getElementById('close-modal-btn');
 
-    const postsSection = document.querySelector('.posts-section .post-list-container');
-    postsSection.innerHTML = '<p>Cargando tus posts de Medium...</p>';
+    // 2. FUNCIÓN PARA CERRAR MODAL
+    const closeModal = () => {
+        modalOverlay.style.display = 'none';
+        modalContent.innerHTML = ''; // Limpiamos el contenido
+    };
+    closeModalBtn.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target.id === 'modal-overlay') {
+            closeModal(); // Cierra si se hace clic fuera de la caja de contenido
+        }
+    });
 
-    fetch(RSS_PROXY_URL)
-        .then(response => {
+
+    // 3. FUNCIÓN PARA ABRIR Y CARGAR CONTENIDO COMPLETO (Overlay)
+    const loadFullPost = async (filename) => {
+        modalOverlay.style.display = 'flex';
+        modalContent.innerHTML = '<h2>Cargando...</h2>';
+
+        const filePath = `posts/${filename}`;
+        
+        try {
+            const response = await fetch(filePath);
             if (!response.ok) {
-                 // Si falla aquí, la API proxy tuvo un problema
-                throw new Error(`No se pudo conectar al servicio de Feed. Estado: ${response.status}`);
+                throw new Error(`Error 404: No se encontró el archivo ${filename}`);
             }
-            return response.json();
-        })
-        .then(data => {
-            postsSection.innerHTML = ''; // Limpiamos el mensaje de carga
+            const markdownText = await response.text();
+            
+            // Lógica para extraer metadata y contenido (similar a la versión anterior)
+            let metadata = {};
+            let markdownContent = '';
+            let inMetadata = false;
+            
+            const lines = markdownText.split('\n');
+            let metadataEndFound = false;
 
-            if (data.status !== 'ok' || !data.items || data.items.length === 0) {
-                postsSection.innerHTML = '<p>No se encontraron posts o el feed de Medium no está disponible.</p>';
-                return;
+            for (const line of lines) {
+                if (line.trim() === '---') {
+                    if (!metadataEndFound) {
+                        inMetadata = !inMetadata;
+                        if (!inMetadata) metadataEndFound = true;
+                        continue;
+                    }
+                }
+                if (inMetadata) {
+                    const [key, ...value] = line.split(':');
+                    if (key && value.length) {
+                        metadata[key.trim()] = value.join(':').trim();
+                    }
+                } else {
+                    markdownContent += line + '\n';
+                }
             }
 
-            // data.items contiene la lista de tus posts. Mostramos los últimos 5.
-            data.items.slice(0, 5).forEach(post => { 
+            // Renderizar el contenido completo en el modal
+            const htmlContent = marked.parse(markdownContent);
+            modalContent.innerHTML = `
+                <h1 class="post-title">${metadata.titulo || filename}</h1>
+                <p class="post-meta">Publicado el ${metadata.fecha} por ${metadata.autor}</p>
+                <div class="post-body">${htmlContent}</div>
+            `;
+
+        } catch (error) {
+            modalContent.innerHTML = `<h2>Error al cargar el post.</h2><p>${error.message}</p>`;
+            console.error(error);
+        }
+    };
+
+
+    // 4. FUNCIÓN PRINCIPAL DE CARGA Y RENDERIZADO
+    const loadPostsManifest = async () => {
+        postsListContainer.innerHTML = '<p>Cargando lista de posts...</p>';
+        try {
+            const manifestResponse = await fetch(POSTS_MANIFEST);
+            if (!manifestResponse.ok) {
+                throw new Error("No se pudo cargar el manifiesto de posts. Revisa GitHub Actions.");
+            }
+            const fileList = await manifestResponse.json();
+
+            postsListContainer.innerHTML = ''; // Limpiamos el cargador
+
+            fileList.forEach(filename => {
                 const postElement = document.createElement('article');
-                postElement.classList.add('post');
+                postElement.classList.add('post-summary');
                 
-                // Medium devuelve el contenido con HTML. Lo limpiamos y limitamos a 200 caracteres para el resumen.
-                const summary = post.content.substring(0, 200).replace(/<[^>]*>?/gm, '') + '...';
+                // Aquí podrías cargar solo la metadata si la necesitaras, 
+                // pero por simplicidad, hacemos un link directo.
+                
+                const postTitle = filename.replace('.md', '').replace(/\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' ');
 
                 postElement.innerHTML = `
-                    <h3><a href="${post.link}" target="_blank">${post.title}</a></h3>
-                    <p class="post-meta">
-                        <span class="post-date">${new Date(post.pubDate).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
-                        <span class="post-author">por ${post.author}</span>
-                    </p>
-                    <div class="post-body">
-                        <p>${summary}</p>
-                        <a href="${post.link}" target="_blank">Leer historia completa en Medium &rarr;</a>
-                    </div>
+                    <h3>${postTitle}</h3>
+                    <p>Haga clic para leer en la ventana emergente.</p>
+                    <a href="#" data-filename="${filename}">Leer Post Completo</a>
                 `;
-                postsSection.appendChild(postElement);
+
+                // Añadimos el evento para cargar el post en el modal
+                postElement.querySelector('a').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadFullPost(filename);
+                });
+
+                postsListContainer.appendChild(postElement);
             });
-        })
-        .catch(error => {
-            console.error("Error al cargar el feed RSS:", error);
-            postsSection.innerHTML = `<p>Error crítico al cargar los posts: ${error.message}. Verifica tu conexión o el nombre de usuario de Medium.</p>`;
-        });
+
+        } catch (error) {
+            console.error("Error al cargar el manifiesto:", error);
+            postsListContainer.innerHTML = `<p>Error crítico: ${error.message}</p>`;
+        }
+    };
+
+    loadPostsManifest();
 });

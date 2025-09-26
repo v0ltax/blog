@@ -1,0 +1,43 @@
+name: Generar Manifiesto de Posts
+
+on:
+  # Dispara la acción cuando subes cambios a la rama principal (main o master)
+  push:
+    branches:
+      - main  # Cambia a 'master' si usas esa rama
+    paths:
+      - 'posts/*.md' # Solo se activa si subes o modificas un archivo .md
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Permite que el workflow escriba en el repositorio (para commitear el posts.json)
+          token: ${{ secrets.GITHUB_TOKEN }} 
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run Manifest Generator
+        run: |
+          python generate_manifest.py
+        
+      - name: Commit and Push posts.json
+        run: |
+          # Configuración del bot para el commit
+          git config user.name 'GitHub Actions Bot'
+          git config user.email 'actions@github.com'
+          
+          # Verifica si hay cambios en posts.json y hace commit
+          if git diff --exit-code --quiet posts/posts.json; then
+            echo "posts.json no ha cambiado. Terminando."
+          else
+            echo "Actualizando posts.json..."
+            git add posts/posts.json
+            git commit -m "Automatización: Actualizado posts.json [skip ci]"
+            git push
+          fi
