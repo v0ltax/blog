@@ -3,36 +3,35 @@ name: Generar Manifiesto de Posts
 on:
   push:
     branches:
-      - main  # ⬅️ REVISA: ¿Es 'main' o es 'master' en tu repo?
+      - main  # ⬅️ IMPORTANTE: Cambia a 'master' si esa es tu rama principal
     paths:
-      - 'posts/*.md' # ⬅️ REVISA: Asegúrate de que la carpeta se llama 'posts' (minúscula)
+      - 'posts/*.md' # Se activa solo si subes o modificas un archivo .md
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    # 1. PERMISOS EXPLÍCITOS: Esto anula cualquier bloqueo de la interfaz.
+    permissions:
+      contents: write # Le da permiso al Bot para subir archivos
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }} 
+      - name: Checkout del Repositorio
+        uses: actions/checkout@v4
       
-      - name: Set up Python
+      - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Run Manifest Generator
+      - name: Ejecutar Generador de Manifiesto
         run: |
-          python generate_manifest.py # ⬅️ REVISA: ¿El script está en la raíz?
+          python generate_manifest.py # Corre el script para crear posts.json
         
-      - name: Commit and Push posts.json
-        run: |
-          git config user.name 'GitHub Actions Bot'
-          git config user.email 'actions@github.com'
-          
-          if git diff --exit-code --quiet posts/posts.json; then
-            echo "posts.json no ha cambiado. Terminando."
-          else
-            echo "Actualizando posts.json..."
-            git add posts/posts.json
-            git commit -m "Automatización: Actualizado posts.json [skip ci]"
-            git push
+      - name: Subir posts.json de vuelta al Repo
+        # 2. ACCIÓN DE COMMIT ROBUSTA: Usa una librería para subir el archivo
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_files: posts/posts.json # Solo sube el posts.json
+          commit_message: "Automatización: Actualizado posts.json [skip ci]"
+          branch: main # ⬅️ IMPORTANTE: Asegurate de que sea tu rama principal
