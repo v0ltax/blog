@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else if (metadataEndFound) {
                 if (readingSummary) {
-                    if (line.trim() !== '' && !line.trim().startsWith('#')) { // Ignorar títulos del resumen
+                    if (line.trim() !== '' && !line.trim().startsWith('#')) {
                         summaryLines.push(line);
                     } else if (summaryLines.length > 0) {
                         readingSummary = false; 
@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Limitar el resumen a los primeros 180 caracteres
         const summary = summaryLines.join(' ').substring(0, 180).trim() + '...';
 
         return { metadata, content, summary };
@@ -55,8 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. FUNCIÓN PARA CERRAR MODAL (con fade out)
     const closeModal = () => {
-        modalOverlay.classList.remove('active'); // Inicia el fade out
-        // Espera a que termine la transición (300ms del CSS) antes de ocultar
+        modalOverlay.classList.remove('active');
         setTimeout(() => {
             modalOverlay.style.display = 'none'; 
             modalContent.innerHTML = ''; 
@@ -72,9 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. FUNCIÓN PARA ABRIR Y CARGAR CONTENIDO COMPLETO (Overlay)
     const loadFullPost = async (filename) => {
-        modalOverlay.style.display = 'flex'; // Primero hacemos display:flex para que se vea
+        modalOverlay.style.display = 'flex'; 
         
-        // Agrega la clase 'active' después de un pequeño retraso para el fade in
         setTimeout(() => {
             modalOverlay.classList.add('active');
         }, 10);
@@ -92,16 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const { metadata, content } = parsePostData(markdownText);
             
-            // Renderizado de Markdown
             const htmlContent = marked.parse(content);
-            
             modalContent.innerHTML = `
                 <p class="post-meta-modal">${metadata.autor || 'Voltax'} | ${metadata.fecha || 'Sin fecha'}</p>
                 <h1 class="post-title-modal">${metadata.titulo || filename}</h1>
                 <div class="post-body-modal">${htmlContent}</div>
             `;
             
-            // Scroll al tope del modal (importante si el usuario hizo scroll antes de abrirlo)
             modalOverlay.scrollTop = 0;
 
         } catch (error) {
@@ -121,12 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const fileList = await manifestResponse.json();
 
-            // 5a. Crear array de promesas para cargar TODOS los archivos MD
             const fetchPromises = fileList.map(filename => 
                 fetch(`posts/${filename}`).then(res => res.text())
             );
 
-            // 5b. Esperar a que todos se descarguen
             const allMarkdownTexts = await Promise.all(fetchPromises);
             postsListContainer.innerHTML = ''; 
 
@@ -170,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPostsManifest();
 
     // ===========================================
-    // LÓGICA DEL BOTÓN "IR ARRIBA"
+    // LÓGICA DEL BOTÓN "IR ARRIBA" (Manejado por JS porque requiere lógica de mostrar/ocultar)
     // ===========================================
 
     // 1. Mostrar/Ocultar el botón
@@ -184,36 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Funcionalidad de scroll suave
     scrollToTopBtn.addEventListener('click', () => {
+        // Usamos window.scrollTo en lugar del href para mantener el comportamiento suave 
         window.scrollTo({
             top: 0,
             behavior: 'smooth' 
         });
     });
-    
-    // ===========================================
-    // LÓGICA DEL SCROLL A LA SECCIÓN DE POSTS (Barra de Navegación)
-    // ===========================================
-
-    // Encontrar el enlace 'Posts' en la barra de navegación.
-    const postsLink = Array.from(document.querySelectorAll('.nav-list a')).find(
-        link => link.textContent.trim() === 'Posts'
-    ); 
-
-    if (postsLink) {
-        postsLink.addEventListener('click', (e) => {
-            e.preventDefault(); 
-            
-            // El ID de la sección de destino
-            const targetSection = document.getElementById('posts-section');
-
-            if (targetSection) {
-                // Desplazamiento a la posición de la sección, ajustado para el header fijo (70px)
-                window.scrollTo({
-                    top: targetSection.offsetTop - 70, 
-                    behavior: 'smooth' 
-                });
-            }
-        });
-    }
     // ===========================================
 });

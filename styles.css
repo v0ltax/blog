@@ -18,6 +18,9 @@ body {
     
     /* Empuja el contenido para que no se esconda bajo el header fijo */
     padding-top: 65px; 
+    
+    /* Habilita el scroll suave para todos los enlaces internos (#) */
+    scroll-behavior: smooth;
 }
 
 a {
@@ -62,6 +65,7 @@ a:hover {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-primary);
+    cursor: pointer; /* Indica que es clickable */
 }
 
 .nav-list {
@@ -112,7 +116,6 @@ a:hover {
 .post-summary {
     border-bottom: 1px solid #eee;
     padding-bottom: 2.5rem;
-    cursor: pointer;
 }
 
 .post-title-link { /* Título clickable */
