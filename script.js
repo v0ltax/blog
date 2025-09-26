@@ -162,7 +162,42 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPostsManifest();
 
     // ===========================================
-    // LÓGICA DEL BOTÓN "IR ARRIBA" (Manejado por JS porque requiere lógica de mostrar/ocultar)
+    // LÓGICA DE SCROLL SUAVE (Botones de menú y Logo)
+    // ===========================================
+
+    // Función genérica para manejar el scroll suave con ajuste de offset
+    const smoothScroll = (e) => {
+        const targetId = e.currentTarget.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+            e.preventDefault();
+            // Ajuste de offset de 70px para compensar el header fijo
+            const offset = 70; 
+            const targetPosition = targetElement.offsetTop - offset;
+
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+        } else if (targetId === 'top') {
+             e.preventDefault();
+             window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // Aplicar scroll suave al logo (href="#top") y al enlace Posts (href="#posts-section")
+    const navLinks = document.querySelectorAll('.nav-list a[href^="#"], .logo[href^="#"]');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', smoothScroll);
+    });
+    
+    // ===========================================
+    // LÓGICA DEL BOTÓN "IR ARRIBA"
     // ===========================================
 
     // 1. Mostrar/Ocultar el botón
@@ -176,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Funcionalidad de scroll suave
     scrollToTopBtn.addEventListener('click', () => {
-        // Usamos window.scrollTo en lugar del href para mantener el comportamiento suave 
         window.scrollTo({
             top: 0,
             behavior: 'smooth' 
