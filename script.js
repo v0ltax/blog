@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // --- PASO 1: Descargar la lista de archivos (el manifiesto) ---
         try {
+            // ¡AGREGÁ ESTA LÍNEA!
+            console.log("Intentando cargar el manifiesto desde:", MANIFEST_FILE);
             // El fetch ahora usa la base correcta gracias a la etiqueta <base>
             const manifestResponse = await fetch(MANIFEST_FILE);
             if (!manifestResponse.ok) {
