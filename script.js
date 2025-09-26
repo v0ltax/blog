@@ -1,8 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const GITHUB_USERNAME = "v0ltax"; // Tu nombre de usuario de GitHub
-    const REPO_NAME = "blog";
-    const POSTS_MANIFEST = `https://${GITHUB_USERNAME}.github.io/${REPO_NAME}/posts/posts.json`; 
-    // ...
     // 1. SELECTORES Y RUTAS
     const POSTS_MANIFEST = 'posts/posts.json';
     const postsListContainer = document.getElementById('posts-list');
