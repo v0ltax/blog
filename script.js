@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Apuntamos al archivo JSON que contiene la lista
-    const MANIFEST_FILE = 'posts/posts.json';
+    const MANIFEST_FILE = './posts/posts.json';
 
     const postsSection = document.querySelector('.posts-section .post-list-container');
     const postsData = [];
