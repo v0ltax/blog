@@ -1,10 +1,9 @@
 ---
-titulo: a blog is dead
+titulo: todo concluye al fin
 autor: voltax
 fecha: 28 de septiembre, 2025
 ---
 
-## todo concluye al fin
 Bueno, esto fue todo.
 Un blog que nadie leyó, nadie comentó y nadie compartió.
 Como una peli de culto que solo vi yo… pero la amé igual.

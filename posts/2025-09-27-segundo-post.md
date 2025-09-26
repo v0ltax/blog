@@ -1,10 +1,9 @@
 ---
-titulo: a post is born
+titulo: atando cabos
 autor: voltax
 fecha: 27 de septiembre, 2025
 ---
 
-## atando cabos
 Hay gente que cree que uno va a estar siempre, como si fueras un fondo de pantalla estático en sus vidas. No te llaman, no te escriben, no agradecen. Pero cuando se cae todo… ahí sí, te buscan.
 
 "Sometimes I feel like I'm just a clown for your amusement…"
