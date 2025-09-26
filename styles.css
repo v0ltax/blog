@@ -1,14 +1,15 @@
-/* RESET BÁSICO Y VARIABLES GLOBALES */
+/* RESET Y FONDOS */
 :root {
-    --color-primary: #333;
-    --color-secondary: #007bff;
-    --color-background: #f4f4f4;
-    --color-text-light: #666;
+    --color-primary: #1a1a1a; /* Texto principal */
+    --color-secondary: #008744; /* Verde de enlaces/detalles */
+    --color-background: #ffffff; /* Fondo blanco */
+    --font-serif: 'Merriweather', serif; /* Para títulos */
+    --font-sans: 'Inter', sans-serif; /* Para metadatos y cuerpo */
 }
 
 body {
-    font-family: 'Lora', serif;
-    line-height: 1.6;
+    font-family: var(--font-sans);
+    line-height: 1.65;
     margin: 0;
     padding: 0;
     background-color: var(--color-background);
@@ -16,28 +17,28 @@ body {
 }
 
 a {
-    color: var(--color-secondary);
+    color: var(--color-primary);
     text-decoration: none;
 }
 
 a:hover {
-    text-decoration: underline;
+    color: var(--color-secondary);
 }
 
-/* ESTRUCTURA GENERAL */
+/* ESTRUCTURA Y CONTENEDORES */
 .header-container,
 .main-content,
-.footer-container {
+.footer {
     width: 90%;
-    max-width: 1200px;
+    max-width: 768px; /* Medium usa un ancho máximo cómodo para lectura */
     margin: 0 auto;
 }
 
+/* HEADER Y NAVEGACIÓN */
 .header {
-    background: #fff;
-    border-bottom: 1px solid #ddd;
-    padding: 1rem 0;
-    margin-bottom: 2rem;
+    background: var(--color-background);
+    border-bottom: 1px solid #eee;
+    padding: 1.5rem 0;
 }
 
 .header-container {
@@ -47,8 +48,8 @@ a:hover {
 }
 
 .logo {
-    font-family: 'Merriweather', serif;
-    font-size: 1.8rem;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-primary);
 }
@@ -57,153 +58,156 @@ a:hover {
     list-style: none;
     display: flex;
     gap: 1.5rem;
+    padding: 0;
 }
 
-/* SECCIONES DE POSTS */
-.featured-story {
-    margin-bottom: 3rem;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.nav-list a {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* SECCIONES DE CONTENIDO */
+.welcome-section {
+    padding: 3rem 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2rem;
+}
+
+.welcome-section h1 {
+    font-family: var(--font-serif);
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--color-text-light);
 }
 
 .posts-section h2 {
-    font-family: 'Merriweather', serif;
-    border-bottom: 2px solid var(--color-secondary);
-    padding-bottom: 0.5rem;
-    margin-top: 3rem;
-    margin-bottom: 1.5rem;
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    padding-top: 1rem;
 }
 
-/* LISTA DE POSTS (Resúmenes de la Home) */
+/* LISTA DE POSTS (Estilo 'Ladrillo' simple) */
 #posts-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
 }
 
 .post-summary {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
-}
-
-.post-summary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid #eee;
+    padding-bottom: 2.5rem;
+    cursor: pointer;
 }
 
 .post-summary h3 {
-    font-size: 1.3rem;
-    font-family: 'Merriweather', serif;
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    font-weight: 700;
     margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.post-summary p {
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+}
+
+.post-summary:hover h3 {
+    color: var(--color-secondary);
 }
 
 /* FOOTER */
 .footer {
-    background: var(--color-primary);
-    color: #fff;
+    border-top: 1px solid #eee;
     padding: 2rem 0;
     margin-top: 4rem;
-}
-
-.footer-container {
-    display: flex;
-    justify-content: space-between;
-}
-
-.footer-section h4 {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.footer-section ul {
-    list-style: none;
-    padding: 0;
-}
-
-.footer-section a {
-    color: #ccc;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
 }
 
 /* ================================== */
 /* 💥 REGLAS DEL OVERLAY (MODAL) 💥   */
+/* Se mantienen para funcionalidad */
 /* ================================== */
 
-/* Contenedor principal: ocupa toda la pantalla */
 #modal-overlay {
-    position: fixed; /* Fija la posición en la ventana de visualización */
+    position: fixed; 
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8); /* Fondo oscuro para el efecto modal */
-    z-index: 1000; /* Asegura que esté por encima de todo */
-    display: flex; /* Centra el contenido */
+    background-color: rgba(255, 255, 255, 0.95); /* Fondo blanco semitransparente */
+    z-index: 1000; 
+    display: flex; 
     justify-content: center;
-    overflow-y: auto; /* Permite desplazamiento si el contenido es largo */
+    overflow-y: auto; 
     padding: 20px;
 }
 
-/* Contenido de la ventana modal */
 #modal-container {
     background: #fff;
-    padding: 2.5rem;
-    border-radius: 8px;
+    padding: 2rem;
     width: 95%;
-    max-width: 800px;
-    margin: 2rem 0; /* Espacio arriba y abajo para que se vea bien al hacer scroll */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 740px; /* Ancho de lectura de Medium */
+    box-shadow: none; /* Quitamos la sombra para un look más limpio */
     position: relative;
-    max-height: calc(100vh - 40px);
+    max-height: fit-content;
 }
 
-/* Botón de cierre */
 #close-modal-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: var(--color-primary);
-    color: #fff;
-    border: none;
+    position: fixed; /* Lo fijamos en la ventana, no en el contenido */
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
     padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
+    border-radius: 50%; /* Circular */
     font-weight: 700;
-    z-index: 1001; /* Debe estar sobre el contenido del post */
+    cursor: pointer;
+    z-index: 1001;
 }
 
 #close-modal-btn:hover {
-    background: #555;
+    background: #f0f0f0;
 }
 
-/* Contenido del Post */
+/* Estilos de Markdown (Contenido) */
 #modal-content {
-    /* Espacio extra para que el contenido no quede debajo del botón de cerrar */
-    padding-top: 20px; 
+    /* El contenido sigue los estilos de lectura de Medium */
+    font-family: 'Lora', serif;
+    font-size: 1.15rem;
+    padding-top: 40px; /* Para que no se esconda bajo el botón */
 }
 
-/* Estilos de Markdown (para el contenido cargado) */
-#modal-content h1, 
+#modal-content h1 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-top: 0;
+}
+
 #modal-content h2 {
-    font-family: 'Merriweather', serif;
+    font-family: var(--font-serif);
+    font-size: 2rem;
     margin-top: 1.5rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.3rem;
+    border-bottom: none;
 }
 
 #modal-content p {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 #modal-content img {
     max-width: 100%;
     height: auto;
     display: block;
-    margin: 1.5rem auto;
-    border-radius: 6px;
+    margin: 2rem auto;
 }
