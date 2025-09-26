@@ -43,16 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // Limitar el resumen a los primeros 180 caracteres
         const summary = summaryLines.join(' ').substring(0, 180).trim() + '...';
 
         return { metadata, content, summary };
     };
 
 
-    // 3. FUNCIÓN PARA CERRAR MODAL
+    // 3. FUNCIÓN PARA CERRAR MODAL (con fade out)
     const closeModal = () => {
-        modalOverlay.style.display = 'none';
-        modalContent.innerHTML = ''; 
+        modalOverlay.classList.remove('active'); // Inicia el fade out
+        // Espera a que termine la transición (300ms del CSS) antes de ocultar
+        setTimeout(() => {
+            modalOverlay.style.display = 'none'; 
+            modalContent.innerHTML = ''; 
+        }, 300); 
     };
     closeModalBtn.addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', (e) => {
@@ -64,7 +69,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. FUNCIÓN PARA ABRIR Y CARGAR CONTENIDO COMPLETO (Overlay)
     const loadFullPost = async (filename) => {
-        modalOverlay.style.display = 'flex';
+        modalOverlay.style.display = 'flex'; // Primero hacemos display:flex para que se vea
+        
+        // Agrega la clase 'active' después de un pequeño retraso para el fade in
+        setTimeout(() => {
+            modalOverlay.classList.add('active');
+        }, 10);
+        
         modalContent.innerHTML = '<h2>Cargando...</h2>';
 
         const filePath = `posts/${filename}`;
@@ -117,14 +128,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 postElement.classList.add('post-summary');
                 
                 postElement.innerHTML = `
-                    <h3>${metadata.titulo || filename}</h3>
+                    <h3 class="post-title-link" data-filename="${filename}">${metadata.titulo || filename}</h3>
                     <p class="post-meta">
                         ${metadata.autor || 'Voltax'} &bull; ${metadata.fecha || 'Sin fecha'}
                     </p>
                     <p class="post-resumen">${summary}</p>
                     <a href="#" data-filename="${filename}" class="read-more-link">Leer Post Completo</a>
                 `;
+                
+                // Listener para el click en el Título (h3)
+                postElement.querySelector('.post-title-link').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadFullPost(filename);
+                });
 
+                // Listener para el enlace "Leer Post Completo"
                 postElement.querySelector('.read-more-link').addEventListener('click', (e) => {
                     e.preventDefault();
                     loadFullPost(filename);
