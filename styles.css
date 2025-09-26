@@ -342,6 +342,10 @@ a:hover {
     opacity: 1;
 }
 
+:target {
+    scroll-margin-top: 80px; 
+}
+
 /* ================================== */
 /* 📱 MEDIA QUERIES (RESPONSIVIDAD) 📱 */
 /* ================================== */
