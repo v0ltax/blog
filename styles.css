@@ -214,9 +214,9 @@ a:hover {
     position: fixed; 
     top: 20px;
     right: 20px;
-    background: transparent;
-    color: #000000; /* Color blanco para destacar en el fondo oscuro */
-    border: 1px solid #656565;
+    background: #000;
+    color: #fff; /* Color blanco para destacar en el fondo oscuro */
+    border: 1px solid #fff;
     padding: 8px 12px;
     border-radius: 50%; 
     font-weight: 700;
