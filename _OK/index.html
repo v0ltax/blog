@@ -10,14 +10,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lora:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body id="top">
 
     <header class="header">
         <div class="header-container">
-            <a href="#" class="logo">Voltax Notebook</a>
+            <a href="#top" class="logo">Plano Secuencia y Distorsión</a>
             <nav class="nav">
                 <ul class="nav-list">
-                    <li><a href="#">Posts</a></li>
+                    <li><a href="#posts-section">Posts</a></li> 
                     <li><a href="https://github.com/v0ltax" target="_blank">GitHub</a></li>
                     <li><a href="https://medium.com/@voltax" target="_blank">Medium</a></li>
                 </ul>
@@ -29,10 +29,20 @@
         
         <section class="welcome-section">
             <h1>Bienvenido al Cuaderno de Voltax.</h1>
-            <p class="subtitle">Pensamientos, notas y soluciones para tus proyectos.</p>
+            <p class="subtitle">Esto no es un blog.
+            Es un cuaderno de tapa blanda perdido en la era del algoritmo.
+            Es un puñado de pensamientos, notas sueltas y soluciones improvisadas, escritas entre café frío y ruido de fondo.
+
+            Acá vas a encontrar ideas para proyectos que quizás nunca empiecen, reflexiones que nadie pidió, y alguna que otra frase digna de una remera.
+
+            Escribir en internet en 2025 es como gritar en un callejón vacío.
+            Pero si alguien pasa y escucha… que se quede un rato.
+
+            Luces, cámara, distorsión.
+            Esto empieza. O algo así.</p>
         </section>
 
-        <section class="posts-section">
+        <section id="posts-section" class="posts-section">
             <h2>Últimos Posts</h2>
             <div id="posts-list" class="post-list-container">
                 <p>Cargando posts...</p>
@@ -45,9 +55,11 @@
         <p>© 2025 Voltax Notebook. Desarrollado con 🧡 y GitHub Pages.</p>
     </footer>
     
+    <button id="scrollToTopBtn" style="display: none;">↑</button>
+
     <div id="modal-overlay" style="display: none;">
         <div id="modal-container">
-            <button id="close-modal-btn">Cerrar [X]</button>
+            <button id="close-modal-btn">X</button>
             <div id="modal-content">
             </div>
         </div>

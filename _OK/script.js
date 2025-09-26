@@ -7,9 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalOverlay = document.getElementById('modal-overlay');
     const modalContent = document.getElementById('modal-content');
     const closeModalBtn = document.getElementById('close-modal-btn');
+    
+    // Selectores del botón "Ir Arriba"
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
     // 2. FUNCIÓN PARA LEER METADATA Y RESUMEN
-    // Esta función lee el encabezado YAML (---) de un archivo .md y el primer párrafo
     const parsePostData = (markdownText) => {
         let metadata = {};
         let content = '';
@@ -30,32 +32,33 @@ document.addEventListener('DOMContentLoaded', () => {
             if (inMetadata) {
                 const [key, ...value] = line.split(':');
                 if (key && value.length) {
-                    metadata[key.trim()] = value.join(':').trim().replace(/^['"]|['"]$/g, ''); // Limpiar comillas
+                    metadata[key.trim()] = value.join(':').trim().replace(/^['"]|['"]$/g, '');
                 }
             } else if (metadataEndFound) {
-                // Leer el resumen (el primer párrafo después de la metadata)
                 if (readingSummary) {
-                    if (line.trim() !== '') {
+                    if (line.trim() !== '' && !line.trim().startsWith('#')) {
                         summaryLines.push(line);
                     } else if (summaryLines.length > 0) {
-                        readingSummary = false; // El primer espacio en blanco termina el resumen
+                        readingSummary = false; 
                     }
                 }
                 content += line + '\n';
             }
         }
         
-        // El resumen es la primera parte del contenido
         const summary = summaryLines.join(' ').substring(0, 180).trim() + '...';
 
         return { metadata, content, summary };
     };
 
 
-    // 3. FUNCIÓN PARA CERRAR MODAL
+    // 3. FUNCIÓN PARA CERRAR MODAL (con fade out)
     const closeModal = () => {
-        modalOverlay.style.display = 'none';
-        modalContent.innerHTML = ''; 
+        modalOverlay.classList.remove('active');
+        setTimeout(() => {
+            modalOverlay.style.display = 'none'; 
+            modalContent.innerHTML = ''; 
+        }, 300); 
     };
     closeModalBtn.addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', (e) => {
@@ -67,7 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. FUNCIÓN PARA ABRIR Y CARGAR CONTENIDO COMPLETO (Overlay)
     const loadFullPost = async (filename) => {
-        modalOverlay.style.display = 'flex';
+        modalOverlay.style.display = 'flex'; 
+        
+        setTimeout(() => {
+            modalOverlay.classList.add('active');
+        }, 10);
+        
         modalContent.innerHTML = '<h2>Cargando...</h2>';
 
         const filePath = `posts/${filename}`;
@@ -81,13 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const { metadata, content } = parsePostData(markdownText);
             
-            // Renderizar el contenido completo en el modal
             const htmlContent = marked.parse(content);
             modalContent.innerHTML = `
                 <p class="post-meta-modal">${metadata.autor || 'Voltax'} | ${metadata.fecha || 'Sin fecha'}</p>
                 <h1 class="post-title-modal">${metadata.titulo || filename}</h1>
                 <div class="post-body-modal">${htmlContent}</div>
             `;
+            
+            modalOverlay.scrollTop = 0;
 
         } catch (error) {
             modalContent.innerHTML = `<h2>Error al cargar el post.</h2><p>${error.message}</p>`;
@@ -106,12 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const fileList = await manifestResponse.json();
 
-            // 5a. Crear un array de promesas para cargar TODOS los archivos MD a la vez
             const fetchPromises = fileList.map(filename => 
                 fetch(`posts/${filename}`).then(res => res.text())
             );
 
-            // 5b. Esperar a que todos los archivos se descarguen
             const allMarkdownTexts = await Promise.all(fetchPromises);
             postsListContainer.innerHTML = ''; 
 
@@ -123,15 +130,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 postElement.classList.add('post-summary');
                 
                 postElement.innerHTML = `
-                    <h3>${metadata.titulo || filename}</h3>
+                    <h3 class="post-title-link" data-filename="${filename}">${metadata.titulo || filename}</h3>
                     <p class="post-meta">
                         ${metadata.autor || 'Voltax'} &bull; ${metadata.fecha || 'Sin fecha'}
                     </p>
                     <p class="post-resumen">${summary}</p>
                     <a href="#" data-filename="${filename}" class="read-more-link">Leer Post Completo</a>
                 `;
+                
+                // Listener para el click en el Título (h3)
+                postElement.querySelector('.post-title-link').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadFullPost(filename);
+                });
 
-                // Añadimos el evento para cargar el post en el modal
+                // Listener para el enlace "Leer Post Completo"
                 postElement.querySelector('.read-more-link').addEventListener('click', (e) => {
                     e.preventDefault();
                     loadFullPost(filename);
@@ -142,9 +155,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error al cargar y procesar los posts:", error);
-            postsListContainer.innerHTML = `<p>Error crítico al cargar los posts: ${error.message}. Verifica que el archivo .nojekyll exista.</p>`;
+            postsListContainer.innerHTML = `<p>Error crítico al cargar los posts: ${error.message}. Verifica el archivo .nojekyll.</p>`;
         }
     };
 
     loadPostsManifest();
+
+    // ===========================================
+    // LÓGICA DE SCROLL SUAVE (Botones de menú y Logo)
+    // ===========================================
+
+    // Función genérica para manejar el scroll suave con ajuste de offset
+    const smoothScroll = (e) => {
+        const targetId = e.currentTarget.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+            e.preventDefault();
+            // Ajuste de offset de 70px para compensar el header fijo
+            const offset = 70; 
+            const targetPosition = targetElement.offsetTop - offset;
+
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+        } else if (targetId === 'top') {
+             e.preventDefault();
+             window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // Aplicar scroll suave al logo (href="#top") y al enlace Posts (href="#posts-section")
+    const navLinks = document.querySelectorAll('.nav-list a[href^="#"], .logo[href^="#"]');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', smoothScroll);
+    });
+    
+    // ===========================================
+    // LÓGICA DEL BOTÓN "IR ARRIBA"
+    // ===========================================
+
+    // 1. Mostrar/Ocultar el botón
+    window.addEventListener('scroll', () => {
+        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+            scrollToTopBtn.style.display = "block";
+        } else {
+            scrollToTopBtn.style.display = "none";
+        }
+    });
+
+    // 2. Funcionalidad de scroll suave
+    scrollToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth' 
+        });
+    });
+    // ===========================================
 });

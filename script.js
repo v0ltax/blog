@@ -107,7 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 5. FUNCIÓN PRINCIPAL DE CARGA Y RENDERIZADO
     const loadPostsManifest = async () => {
+        const indexMenu = document.getElementById('index-menu'); 
+        
         postsListContainer.innerHTML = '<p>Cargando lista de posts...</p>';
+        indexMenu.innerHTML = '<h3>Índice de Posts</h3><p>Cargando índice...</p>';
+
         try {
             const manifestResponse = await fetch(POSTS_MANIFEST);
             if (!manifestResponse.ok) {
@@ -121,13 +125,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const allMarkdownTexts = await Promise.all(fetchPromises);
             postsListContainer.innerHTML = ''; 
+            
+            const indexUl = document.createElement('ul');
 
             allMarkdownTexts.forEach((markdownText, index) => {
                 const filename = fileList[index];
                 const { metadata, summary } = parsePostData(markdownText);
+                const postId = `post-${index}`; 
 
+                // ----------------------------------------------------
+                // 5c. Generación de la lista en la SECCIÓN PRINCIPAL
+                // ----------------------------------------------------
                 const postElement = document.createElement('article');
                 postElement.classList.add('post-summary');
+                postElement.id = postId; 
                 
                 postElement.innerHTML = `
                     <h3 class="post-title-link" data-filename="${filename}">${metadata.titulo || filename}</h3>
@@ -138,24 +149,50 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a href="#" data-filename="${filename}" class="read-more-link">Leer Post Completo</a>
                 `;
                 
-                // Listener para el click en el Título (h3)
+                // Listeners (modal)
                 postElement.querySelector('.post-title-link').addEventListener('click', (e) => {
                     e.preventDefault();
                     loadFullPost(filename);
                 });
 
-                // Listener para el enlace "Leer Post Completo"
                 postElement.querySelector('.read-more-link').addEventListener('click', (e) => {
                     e.preventDefault();
                     loadFullPost(filename);
                 });
 
                 postsListContainer.appendChild(postElement);
+
+                // ----------------------------------------------------
+                // 5d. Generación del enlace en el MENÚ LATERAL (Índice)
+                // ----------------------------------------------------
+                const indexLi = document.createElement('li');
+                
+                indexLi.innerHTML = `<a href="#${postId}">${metadata.titulo || filename}</a>`;
+                
+                // Listener para scroll suave desde el índice lateral
+                indexLi.querySelector('a').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetElement = document.getElementById(postId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 70, // Ajuste para el header fijo
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+                
+                indexUl.appendChild(indexLi);
             });
+
+            // 5e. Reemplazar el mensaje de carga del índice con la lista final
+            indexMenu.innerHTML = '<h3>Índice de Posts</h3>';
+            indexMenu.appendChild(indexUl);
+
 
         } catch (error) {
             console.error("Error al cargar y procesar los posts:", error);
             postsListContainer.innerHTML = `<p>Error crítico al cargar los posts: ${error.message}. Verifica el archivo .nojekyll.</p>`;
+            indexMenu.innerHTML = `<h3>Índice de Posts</h3><p>Error al cargar.</p>`;
         }
     };
 
@@ -165,14 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // LÓGICA DE SCROLL SUAVE (Botones de menú y Logo)
     // ===========================================
 
-    // Función genérica para manejar el scroll suave con ajuste de offset
     const smoothScroll = (e) => {
         const targetId = e.currentTarget.getAttribute('href').substring(1);
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
             e.preventDefault();
-            // Ajuste de offset de 70px para compensar el header fijo
             const offset = 70; 
             const targetPosition = targetElement.offsetTop - offset;
 
@@ -189,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Aplicar scroll suave al logo (href="#top") y al enlace Posts (href="#posts-section")
     const navLinks = document.querySelectorAll('.nav-list a[href^="#"], .logo[href^="#"]');
 
     navLinks.forEach(link => {
