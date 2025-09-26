@@ -17,7 +17,7 @@ body {
     color: var(--color-primary);
     
     padding-top: 65px; 
-    scroll-behavior: smooth; /* Mantenemos por si el navegador lo soporta bien */
+    scroll-behavior: smooth; 
 }
 
 a {
@@ -33,17 +33,17 @@ a:hover {
 .header-container,
 .footer {
     width: 90%;
-    max-width: 1100px; /* Nuevo ancho para coincidir con el layout principal */
+    max-width: 1100px; /* Ancho para escritorio */
     margin: 0 auto;
 }
 
-/* 💥 LAYOUT PRINCIPAL CON CSS GRID 💥 */
+/* LAYOUT PRINCIPAL CON CSS GRID */
 .main-layout {
     width: 90%;
-    max-width: 1100px; /* Ancho que da espacio al sidebar */
+    max-width: 1100px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 3fr 1fr; /* 75% contenido, 25% sidebar */
+    grid-template-columns: 3fr 1fr; /* 75% contenido, 25% sidebar en escritorio */
     gap: 50px; 
     padding: 20px 0;
 }
@@ -180,9 +180,8 @@ a:hover {
 }
 
 #index-menu {
-    /* Fija el menú mientras el contenido se desplaza */
     position: sticky;
-    top: 80px; /* Deja un espacio de 80px debajo del header fijo */
+    top: 80px; 
     padding: 1rem;
     border-left: 3px solid var(--color-secondary);
     background-color: #f9f9f9;
@@ -271,7 +270,7 @@ a:hover {
     top: 20px;
     right: 20px;
     background: transparent;
-    color: #fff; /* Aseguramos blanco en fondo oscuro */
+    color: #fff; 
     border: 1px solid #fff;
     padding: 8px 12px;
     border-radius: 50%; 
@@ -341,4 +340,37 @@ a:hover {
 
 #scrollToTopBtn:hover {
     opacity: 1;
+}
+
+/* ================================== */
+/* 📱 MEDIA QUERIES (RESPONSIVIDAD) 📱 */
+/* ================================== */
+
+@media (max-width: 900px) {
+    
+    /* 1. Ocultar la barra lateral completamente */
+    .sidebar {
+        display: none;
+    }
+
+    /* 2. Hacer que el layout principal use una sola columna (el contenido) */
+    .main-layout {
+        grid-template-columns: 1fr; /* Una columna que ocupa el 100% del ancho */
+        gap: 0;
+        max-width: 768px; /* Reducimos el ancho máximo en pantallas más pequeñas */
+    }
+
+    /* 3. Asegurar que el main-content ocupe el espacio */
+    .main-content {
+        grid-column: 1 / -1; /* Ocupa de la primera a la última línea de columna */
+    }
+
+    /* 4. Ajustes de tipografía para móviles */
+    .welcome-section h1 {
+        font-size: 2rem;
+    }
+
+    .post-summary h3 {
+        font-size: 1.5rem;
+    }
 }
