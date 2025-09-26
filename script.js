@@ -8,67 +8,85 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalContent = document.getElementById('modal-content');
     const closeModalBtn = document.getElementById('close-modal-btn');
 
-    // 2. FUNCIÓN PARA CERRAR MODAL
+    // 2. FUNCIÓN PARA LEER METADATA Y RESUMEN
+    // Esta función lee el encabezado YAML (---) de un archivo .md y el primer párrafo
+    const parsePostData = (markdownText) => {
+        let metadata = {};
+        let content = '';
+        let inMetadata = false;
+        
+        const lines = markdownText.split('\n');
+        let metadataEndFound = false;
+        let readingSummary = true;
+        let summaryLines = [];
+
+        for (const line of lines) {
+            if (line.trim() === '---') {
+                inMetadata = !inMetadata;
+                if (!inMetadata) metadataEndFound = true;
+                continue;
+            }
+            
+            if (inMetadata) {
+                const [key, ...value] = line.split(':');
+                if (key && value.length) {
+                    metadata[key.trim()] = value.join(':').trim().replace(/^['"]|['"]$/g, ''); // Limpiar comillas
+                }
+            } else if (metadataEndFound) {
+                // Leer el resumen (el primer párrafo después de la metadata)
+                if (readingSummary) {
+                    if (line.trim() !== '') {
+                        summaryLines.push(line);
+                    } else if (summaryLines.length > 0) {
+                        readingSummary = false; // El primer espacio en blanco termina el resumen
+                    }
+                }
+                content += line + '\n';
+            }
+        }
+        
+        // El resumen es la primera parte del contenido
+        const summary = summaryLines.join(' ').substring(0, 180).trim() + '...';
+
+        return { metadata, content, summary };
+    };
+
+
+    // 3. FUNCIÓN PARA CERRAR MODAL
     const closeModal = () => {
         modalOverlay.style.display = 'none';
-        modalContent.innerHTML = ''; // Limpiamos el contenido
+        modalContent.innerHTML = ''; 
     };
     closeModalBtn.addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', (e) => {
         if (e.target.id === 'modal-overlay') {
-            closeModal(); // Cierra si se hace clic fuera de la caja de contenido
+            closeModal();
         }
     });
 
 
-    // 3. FUNCIÓN PARA ABRIR Y CARGAR CONTENIDO COMPLETO (Overlay)
+    // 4. FUNCIÓN PARA ABRIR Y CARGAR CONTENIDO COMPLETO (Overlay)
     const loadFullPost = async (filename) => {
         modalOverlay.style.display = 'flex';
         modalContent.innerHTML = '<h2>Cargando...</h2>';
 
         const filePath = `posts/${filename}`;
-
-        console.log("URL de Fetch solicitada:", filePath);
         
         try {
             const response = await fetch(filePath);
             if (!response.ok) {
-                throw new Error(`Error 404: No se encontró el archivo ${filename}`);
+                throw new Error(`Error ${response.status}: No se encontró el archivo ${filename}`);
             }
             const markdownText = await response.text();
             
-            // Lógica para extraer metadata y contenido (similar a la versión anterior)
-            let metadata = {};
-            let markdownContent = '';
-            let inMetadata = false;
+            const { metadata, content } = parsePostData(markdownText);
             
-            const lines = markdownText.split('\n');
-            let metadataEndFound = false;
-
-            for (const line of lines) {
-                if (line.trim() === '---') {
-                    if (!metadataEndFound) {
-                        inMetadata = !inMetadata;
-                        if (!inMetadata) metadataEndFound = true;
-                        continue;
-                    }
-                }
-                if (inMetadata) {
-                    const [key, ...value] = line.split(':');
-                    if (key && value.length) {
-                        metadata[key.trim()] = value.join(':').trim();
-                    }
-                } else {
-                    markdownContent += line + '\n';
-                }
-            }
-
             // Renderizar el contenido completo en el modal
-            const htmlContent = marked.parse(markdownContent);
+            const htmlContent = marked.parse(content);
             modalContent.innerHTML = `
-                <h1 class="post-title">${metadata.titulo || filename}</h1>
-                <p class="post-meta">Publicado el ${metadata.fecha} por ${metadata.autor}</p>
-                <div class="post-body">${htmlContent}</div>
+                <p class="post-meta-modal">${metadata.autor || 'Voltax'} | ${metadata.fecha || 'Sin fecha'}</p>
+                <h1 class="post-title-modal">${metadata.titulo || filename}</h1>
+                <div class="post-body-modal">${htmlContent}</div>
             `;
 
         } catch (error) {
@@ -78,35 +96,43 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // 4. FUNCIÓN PRINCIPAL DE CARGA Y RENDERIZADO
+    // 5. FUNCIÓN PRINCIPAL DE CARGA Y RENDERIZADO
     const loadPostsManifest = async () => {
         postsListContainer.innerHTML = '<p>Cargando lista de posts...</p>';
         try {
             const manifestResponse = await fetch(POSTS_MANIFEST);
             if (!manifestResponse.ok) {
-                throw new Error("No se pudo cargar el manifiesto de posts. Revisa GitHub Actions.");
+                throw new Error("No se pudo cargar el manifiesto de posts.");
             }
             const fileList = await manifestResponse.json();
 
-            postsListContainer.innerHTML = ''; // Limpiamos el cargador
+            // 5a. Crear un array de promesas para cargar TODOS los archivos MD a la vez
+            const fetchPromises = fileList.map(filename => 
+                fetch(`posts/${filename}`).then(res => res.text())
+            );
 
-            fileList.forEach(filename => {
+            // 5b. Esperar a que todos los archivos se descarguen
+            const allMarkdownTexts = await Promise.all(fetchPromises);
+            postsListContainer.innerHTML = ''; 
+
+            allMarkdownTexts.forEach((markdownText, index) => {
+                const filename = fileList[index];
+                const { metadata, summary } = parsePostData(markdownText);
+
                 const postElement = document.createElement('article');
                 postElement.classList.add('post-summary');
                 
-                // Aquí podrías cargar solo la metadata si la necesitaras, 
-                // pero por simplicidad, hacemos un link directo.
-                
-                const postTitle = filename.replace('.md', '').replace(/\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' ');
-
                 postElement.innerHTML = `
-                    <h3>${postTitle}</h3>
-                    <p>Haga clic para leer en la ventana emergente.</p>
-                    <a href="#" data-filename="${filename}">Leer Post Completo</a>
+                    <h3>${metadata.titulo || filename}</h3>
+                    <p class="post-meta">
+                        ${metadata.autor || 'Voltax'} &bull; ${metadata.fecha || 'Sin fecha'}
+                    </p>
+                    <p class="post-resumen">${summary}</p>
+                    <a href="#" data-filename="${filename}" class="read-more-link">Leer Post Completo</a>
                 `;
 
                 // Añadimos el evento para cargar el post en el modal
-                postElement.querySelector('a').addEventListener('click', (e) => {
+                postElement.querySelector('.read-more-link').addEventListener('click', (e) => {
                     e.preventDefault();
                     loadFullPost(filename);
                 });
@@ -115,8 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         } catch (error) {
-            console.error("Error al cargar el manifiesto:", error);
-            postsListContainer.innerHTML = `<p>Error crítico: ${error.message}</p>`;
+            console.error("Error al cargar y procesar los posts:", error);
+            postsListContainer.innerHTML = `<p>Error crítico al cargar los posts: ${error.message}. Verifica que el archivo .nojekyll exista.</p>`;
         }
     };
 
