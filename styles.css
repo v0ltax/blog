@@ -57,7 +57,7 @@ a:hover {
 .header {
     background: var(--color-background);
     border-bottom: 1px solid #eee;
-    padding: 1.5rem 0;
+    padding: .5rem 0;
     
     position: fixed; 
     top: 0;          
@@ -269,7 +269,7 @@ a:hover {
     position: fixed; 
     top: 20px;
     right: 20px;
-    background: transparent;
+    background: #000;
     color: #fff; 
     border: 1px solid #fff;
     padding: 8px 12px;
