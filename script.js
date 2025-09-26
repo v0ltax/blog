@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalOverlay = document.getElementById('modal-overlay');
     const modalContent = document.getElementById('modal-content');
     const closeModalBtn = document.getElementById('close-modal-btn');
+    
+    // Selectores del botón "Ir Arriba"
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
     // 2. FUNCIÓN PARA LEER METADATA Y RESUMEN
     const parsePostData = (markdownText) => {
@@ -33,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else if (metadataEndFound) {
                 if (readingSummary) {
-                    if (line.trim() !== '') {
+                    if (line.trim() !== '' && !line.trim().startsWith('#')) { // Ignorar títulos del resumen
                         summaryLines.push(line);
                     } else if (summaryLines.length > 0) {
                         readingSummary = false; 
@@ -89,12 +92,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const { metadata, content } = parsePostData(markdownText);
             
+            // Renderizado de Markdown
             const htmlContent = marked.parse(content);
+            
             modalContent.innerHTML = `
                 <p class="post-meta-modal">${metadata.autor || 'Voltax'} | ${metadata.fecha || 'Sin fecha'}</p>
                 <h1 class="post-title-modal">${metadata.titulo || filename}</h1>
                 <div class="post-body-modal">${htmlContent}</div>
             `;
+            
+            // Scroll al tope del modal (importante si el usuario hizo scroll antes de abrirlo)
+            modalOverlay.scrollTop = 0;
 
         } catch (error) {
             modalContent.innerHTML = `<h2>Error al cargar el post.</h2><p>${error.message}</p>`;
@@ -113,10 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const fileList = await manifestResponse.json();
 
+            // 5a. Crear array de promesas para cargar TODOS los archivos MD
             const fetchPromises = fileList.map(filename => 
                 fetch(`posts/${filename}`).then(res => res.text())
             );
 
+            // 5b. Esperar a que todos se descarguen
             const allMarkdownTexts = await Promise.all(fetchPromises);
             postsListContainer.innerHTML = ''; 
 
@@ -163,8 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // LÓGICA DEL BOTÓN "IR ARRIBA"
     // ===========================================
 
-    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-
     // 1. Mostrar/Ocultar el botón
     window.addEventListener('scroll', () => {
         if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
@@ -181,5 +189,31 @@ document.addEventListener('DOMContentLoaded', () => {
             behavior: 'smooth' 
         });
     });
+    
+    // ===========================================
+    // LÓGICA DEL SCROLL A LA SECCIÓN DE POSTS (Barra de Navegación)
+    // ===========================================
+
+    // Encontrar el enlace 'Posts' en la barra de navegación.
+    const postsLink = Array.from(document.querySelectorAll('.nav-list a')).find(
+        link => link.textContent.trim() === 'Posts'
+    ); 
+
+    if (postsLink) {
+        postsLink.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            
+            // El ID de la sección de destino
+            const targetSection = document.getElementById('posts-section');
+
+            if (targetSection) {
+                // Desplazamiento a la posición de la sección, ajustado para el header fijo (70px)
+                window.scrollTo({
+                    top: targetSection.offsetTop - 70, 
+                    behavior: 'smooth' 
+                });
+            }
+        });
+    }
     // ===========================================
 });
