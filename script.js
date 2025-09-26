@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modalContent.innerHTML = '<h2>Cargando...</h2>';
 
         const filePath = `posts/${filename}`;
+
+        console.log("URL de Fetch solicitada:", filePath);
         
         try {
             const response = await fetch(filePath);
