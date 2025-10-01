@@ -1,0 +1,18 @@
+title: Mi Newsletter
+email: tu@email.com
+description: >-
+  Un blog tipo newsletter, inspirado en Medium.
+baseurl: ""
+url: "https://v0ltax.github.io"
+twitter_username: v0ltax
+github_username: v0ltax
+
+# Build settings
+theme: null
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Mediumish theme settings
+author: v0ltax
+paginate: 5
